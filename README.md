@@ -1,7 +1,6 @@
-frontend-nanodegree-arcade-game
+Star Chaser Arcade Game
 ===============================
 
-Star Chaser Arcade Game
 
   -Click to start the game.
   -player can move by pressing the arrow key.
