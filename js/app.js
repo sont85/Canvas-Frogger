@@ -12,6 +12,25 @@ var Game = (function() {
     ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
   };
 
+
+  var Obstacle = function() {
+    this.yPositions = [65, 150, 235, 320];
+    var y = this.yPositions[Math.floor(Math.random() * 4)];
+    var x = (Math.floor(Math.random() * 3) * 100) + 100 ;
+    Entity.call(this, x, y, 'images/Rock.png');
+  };
+
+  Obstacle.prototype = Object.create(Entity.prototype);
+  Obstacle.constructor = Obstacle;
+
+  Obstacle.spawn = function() {
+    game.allObstacles = [];
+    var totalObstacle = Math.floor(Math.random() * 3 + 1);
+    for (var i = 0; i < totalObstacle; i++) {
+      game.allObstacles.push(new Obstacle());
+    }
+  };
+
   // Star Class
   var Star = function(x, y) {
     x = x || Math.floor(Math.random() * 5) * 85;
@@ -42,7 +61,23 @@ var Game = (function() {
     } else {
       this.x = Math.floor(Math.random() * 5) * 85;
       this.y = Math.floor(Math.random() * 5) * 85;
+      if (!this.locationAvailable(this.x, this.y)) {
+        this.reposition();
+      }
     }
+  };
+
+  Star.prototype.locationAvailable = function(x, y) {
+    return game.allObstacles.every(function(obstacle) {
+      var xdiff = (x - obstacle.x);
+      var ydiff = (y - obstacle.y);
+
+      if (xdiff >= -50 && xdiff <= 50 && ydiff >= -50 && ydiff <= 30) {
+        return false;
+      } else {
+        return true;
+      }
+    });
   };
 
   Star.prototype.update = function() {
@@ -51,10 +86,15 @@ var Game = (function() {
 
 
   // Enemy Class
-  var Enemy = function(x, y) {
-    Entity.call(this, x, y, 'images/enemy-bug.png');
+  var Enemy = function(y, direction) {
     // enemy speed randomly generated
     this.speed = Math.floor(Math.random() * 200) + 50;
+    this.direction = direction;
+    if (this.direction === 'right') {
+      Entity.call(this, 0, y, 'images/enemy-bug.png');
+    } else {
+      Entity.call(this, 399, y, 'images/enemy-bug.png');
+    }
   };
   Enemy.prototype = Object.create(Entity.prototype);
   Enemy.constructor = Enemy;
@@ -63,11 +103,16 @@ var Game = (function() {
   Enemy.prototype.update = function(dt) {
     this.move(dt);
     this.checkCollisions();
+    this.checkObstacle();
   };
 
   // Enemy moves horizontally
   Enemy.prototype.move = function(dt) {
-    this.x += dt * this.speed;
+    if (this.direction === 'right') {
+      this.x += dt * this.speed;
+    } else if (this.direction === 'left') {
+      this.x -= dt * this.speed;
+    }
   };
 
   // Check collission between 100px horizontally and 80px vertically of enemy sprite
@@ -80,6 +125,24 @@ var Game = (function() {
     }
   };
 
+  Enemy.prototype.checkObstacle = function() {
+    var enemy = this;
+    game.allObstacles.forEach(function(obstacle) {
+      var xdiff = (enemy.x - obstacle.x);
+      var ydiff = (enemy.y - obstacle.y);
+
+      if (xdiff >= -50 && xdiff <= 50 && ydiff >= -50 && ydiff <= 30) {
+        if (enemy.direction === 'right') {
+          enemy.direction = 'left';
+          enemy.x -= 25;
+        } else if (enemy.direction === 'left') {
+          enemy.direction = 'right';
+          enemy.x += 25;
+        }
+      }
+    });
+  };
+
   // Eliminate all Enemies
   Enemy.reset = function() {
     game.allEnemies = [];
@@ -90,6 +153,8 @@ var Game = (function() {
 
   // Instantiate Enemy and push to allEnemies
   Enemy.spawn = function() {
+    var bugPositions = [65, 150, 235];
+    var directions = ['right', 'left'];
     setInterval(function() {
 
       // keep array under 50 enemies
@@ -98,9 +163,9 @@ var Game = (function() {
       }
 
       // randomized appearance of enemies position
-      var bugPositions = [65, 150, 235];
       var yCoor = bugPositions[Math.floor(Math.random() * 5)];
-      game.allEnemies.push(new Enemy(0, yCoor));
+      var direction = directions[Math.floor(Math.random() * 2)];
+      game.allEnemies.push(new Enemy(yCoor, direction));
     }, Math.random() * 2500 + 0.5);
   };
 
@@ -116,17 +181,22 @@ var Game = (function() {
   Player.constructor = Player;
 
   // Prevent player from going out of bounds/canvas
-  Player.prototype.boundary = function() {
-    if (this.x >= 400) {
-      this.x = 400;
-    } else if (this.x < 0) {
-      this.x = 0;
+  Player.prototype.withinbounds = function(x, y) {
+    var player = this;
+    if (player.x + x >= 400 || player.x + x < 0 || player.y + y >= 400 || player.y + y < 0) {
+      return false;
     }
-    if (this.y >= 400) {
-      this.y = 400;
-    } else if (this.y < 0) {
-      this.y = 0;
-    }
+
+    return game.allObstacles.every(function(obstacle) {
+      var xdiff = (player.x + x - obstacle.x);
+      var ydiff = (player.y + y - obstacle.y);
+
+      if (xdiff >= -50 && xdiff <= 50 && ydiff >= -50 && ydiff <= 30) {
+        return false;
+      } else {
+        return true;
+      }
+    });
   };
 
   // Reposition player to starting point when lose life
@@ -148,13 +218,14 @@ var Game = (function() {
   };
 
   Player.prototype.update = function() {
-    this.boundary();
     this.checkWin();
   };
 
   Player.prototype.move = function(x, y) {
-    this.x += x;
-    this.y += y;
+    if (this.withinbounds(x, y)) {
+      this.x += x;
+      this.y += y;
+    }
   };
 
 
@@ -207,6 +278,7 @@ var Game = (function() {
       case 'new game':
         game.player = new Player();
         game.star = new Star();
+        Obstacle.spawn();
         Enemy.reset();
         Enemy.spawn();
         break;
@@ -233,9 +305,11 @@ var Game = (function() {
   var game = {
     star: new Star(200, 300),
     player: new Player(),
-    allEnemies: []
+    allEnemies: [],
+    allObstacles: []
   };
 
+  Obstacle.spawn();
   // clearing all intervals and enemies then spawn.
   Enemy.reset();
   Enemy.spawn();
