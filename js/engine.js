@@ -6,15 +6,15 @@
  * A game engine works by drawing the entire game screen over and over, kind of
  * like a flipbook you may have created as a kid. When your player moves across
  * the screen, it may look like just that image/character is moving or being
- * drawn but that is not the case. What's really happening is the entire "scene"
+ * drawn but that is not the case. What's really happening is the entire 'scene'
  * is being drawn over and over, presenting the illusion of animation.
  *
  * This engine is available globally via the Engine variable and it also makes
  * the canvas' context (ctx) object globally available to make writing app.js
  * a little simpler to work with.
  */
-'use strict';
 var Engine = (function(global) {
+  'use strict';
   /* Predefine the variables we'll be using within this scope,
    * create the canvas element, grab the 2D context for that canvas
    * set the canvas elements height/width and add it to the DOM.
@@ -65,7 +65,7 @@ var Engine = (function(global) {
    * game loop.
    */
   function init() {
-    reset();
+    intro();
   }
 
   /* This function is called by main (our game loop) and itself calls all
@@ -89,14 +89,14 @@ var Engine = (function(global) {
    * render methods.
    */
   function updateEntities(dt) {
-    allEnemies.forEach(function(enemy) {
+    Game.allEnemies.forEach(function(enemy) {
       enemy.update(dt);
     });
-    star.update();
-    player.update();
+    Game.star.update();
+    Game.player.update();
   }
 
-  /* This function initially draws the "game level", it will then call
+  /* This function initially draws the 'game level', it will then call
    * the renderEntities function. Remember, this function is called every
    * game tick (or loop of the game engine) because that's how games work -
    * they are flipbooks creating the illusion of animation but in reality
@@ -120,7 +120,7 @@ var Engine = (function(global) {
 
     /* Loop through the number of rows and columns we've defined above
      * and, using the rowImages array, draw the correct image for that
-     * portion of the "grid"
+     * portion of the 'grid'
      */
     for (row = 0; row < numRows; row++) {
       for (col = 0; col < numCols; col++) {
@@ -146,39 +146,40 @@ var Engine = (function(global) {
     /* Loop through all of the objects within the allEnemies array and call
      * the render function you have defined.
      */
-    allEnemies.forEach(function(enemy) {
+    Game.allEnemies.forEach(function(enemy) {
       enemy.render();
     });
-    star.render();
-    player.render();
+    Game.star.render();
+    Game.player.render();
   }
 
   /* This function does nothing but it could have been a good place to
    * handle game reset states - maybe a new game menu or a game over screen
    * those sorts of things. It's only called once by the init() method.
    */
-  function reset() {
+  function intro() {
     // background
-    ctx.fillStyle = "#355796";
+    ctx.fillStyle = '#355796';
     ctx.fillRect(0, 0, canvas.width, canvas.height)
 
     // Game Name
-    ctx.font = "68px serif";
-    ctx.fillStyle = "#BD5643"
-    ctx.fillText("Star Chaser", 100, 120);
+    ctx.font = '68px serif';
+    ctx.fillStyle = '#BD5643'
+    ctx.fillText('Star Chaser', 100, 120);
 
     // Instruction text
-    ctx.font = "26px serif"
-    ctx.fillStyle = "#fff"
-    ctx.fillText("Collect 5 Stars To Win Game", 100, 300);
-    ctx.fillText("You Have 3 Lives", 150, 350)
+    ctx.font = '26px serif'
+    ctx.fillStyle = '#fff'
+    ctx.fillText('-Collect 5 Stars Then', 100, 300);
+    ctx.fillText('-Reach The Water To Win', 100, 340);
+    ctx.fillText('-You Have 3 Lives', 100, 380)
 
     // Star Picture
-    ctx.drawImage(Resources.get("images/Star.png"), 200, 100)
+    ctx.drawImage(Resources.get('images/Star.png'), 200, 100)
 
     // Click to start game
-    canvas.addEventListener("click", function() {
-      ctx.fillStyle = "#fff";
+    canvas.addEventListener('click', function() {
+      ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, this.width, this.height);
       lastTime = Date.now();
       main();

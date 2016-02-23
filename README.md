@@ -1,10 +1,13 @@
 Star Chaser Arcade Game
 ===============================
 
+### How to Start Game
 
-Click to start the game.
-player can move by pressing the arrow key.
-Collect 5 Stars to win the game.
-Avoid Colliding with Bugs.
-You have 3 lives.
-Press enter whenever to restart game.
+1. open index.html
+
+### How to Play
+
+1. Use arrow keys to control our hero
+2. Collect 5 Stars then reach the water to win the game
+3. Player have 3 lives
+4. Press enter to restart game
