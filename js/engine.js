@@ -66,8 +66,6 @@ var Engine = (function(global) {
      */
     function init() {
         reset();
-        lastTime = Date.now();
-        main();
     }
 
     /* This function is called by main (our game loop) and itself calls all
@@ -94,22 +92,8 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.update(dt);
         });
+        star.update();
         player.update();
-        checkCollisions();
-    }
-
-    function checkCollisions() {
-      allEnemies.forEach(function(enemy) {
-
-        var xdiff = (player.x - enemy.x);
-        var ydiff = (player.y - enemy.y);
-
-        if (xdiff >= -40 && xdiff <= 40 && ydiff >= -40 && ydiff <= 40) {
-          console.log('collided');
-          player.loseLife()
-          // player = new Player();
-        }
-      });
     }
 
     /* This function initially draws the "game level", it will then call
@@ -165,7 +149,7 @@ var Engine = (function(global) {
         allEnemies.forEach(function(enemy) {
             enemy.render();
         });
-
+        star.render();
         player.render();
     }
 
@@ -174,7 +158,31 @@ var Engine = (function(global) {
      * those sorts of things. It's only called once by the init() method.
      */
     function reset() {
-        // noop
+      // background
+      ctx.fillStyle = "#355796";
+      ctx.fillRect(0,0,canvas.width,canvas.height)
+
+      // Game Name
+      ctx.font = "68px serif";
+      ctx.fillStyle = "#BD5643"
+      ctx.fillText("Star Chaser", 100, 120);
+
+      // Instruction text
+      ctx.font = "26px serif"
+      ctx.fillStyle = "#fff"
+      ctx.fillText("Collect 5 Stars To Win Game", 100, 300);
+      ctx.fillText("You Have 3 Lives", 150, 350)
+
+      // Star Picture
+      ctx.drawImage(Resources.get("images/Star.png"), 200, 100)
+
+      // Click to start game
+      canvas.addEventListener("click", function() {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, this.width, this.height);
+        lastTime = Date.now();
+        main();
+      })
     }
 
     /* Go ahead and load all of the images we know we're going to need to
@@ -186,7 +194,8 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/Star.png',
     ]);
     Resources.onReady(init);
 
